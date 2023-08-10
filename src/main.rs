@@ -6,6 +6,10 @@ fn with_ctrl(c: char) -> u8 {
     byte & 0b0001_1111
 }
 
+fn die(e: std::io::Error) {
+    panic!("{}", e);
+}
+
 fn main() {
     println!("{}Hecto is running!", color::Fg(color::Green));
 
@@ -14,23 +18,26 @@ fn main() {
     let _stdout = io::stdout().into_raw_mode().unwrap();
 
     for b in io::stdin().bytes() {
-        let b = b.unwrap();
-        let c = b as char;
+        match b {
+            Ok(b) => {
+                let c: char = b as char;
+                /*
+                 * 判断是否为控制按键输入
+                 * Control characters are non-printable characters that we don’t want to print to the screen.
+                 * ASCII codes 0–31 are all control characters, and 127 is also a control character.
+                 * ASCII codes 32–126 are all printable
+                 */
+                if c.is_control() {
+                    println!("{:?} \r", b);
+                } else {
+                    println!("{:?} ({})\r", b, c);
+                }
 
-        /*
-         * 判断是否为控制按键输入
-         * Control characters are non-printable characters that we don’t want to print to the screen.
-         * ASCII codes 0–31 are all control characters, and 127 is also a control character.
-         * ASCII codes 32–126 are all printable
-         */
-        if c.is_control() {
-            println!("{:?} \r", b);
-        } else {
-            println!("{:?} ({})\r", b, c);
-        }
-
-        if b == with_ctrl('q') {
-            break;
+                if b == with_ctrl('q') {
+                    break;
+                }
+            }
+            Err(e) => die(e),
         }
     }
 }
