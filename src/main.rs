@@ -7,6 +7,6 @@ fn main() {
     println!("{}Hecto is running!", color::Fg(color::Green));
     // Editor::run();
 
-    let editor = Editor {};
+    let editor = Editor::default();
     editor.run();
 }

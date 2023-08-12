@@ -3,8 +3,8 @@ use termion::{event::Key, input::TermRead, raw::IntoRawMode};
 
 pub struct Editor {}
 
-fn die(e: std::io::Error) {
-    panic!("{}", e);
+fn die(e: &std::io::Error) {
+    panic!("{}", &e);
 }
 
 impl Editor {
@@ -24,16 +24,19 @@ impl Editor {
                          * ASCII codes 32–126 are all printable
                          */
                         if c.is_control() {
-                            println!("{:?}\r", c);
+                            println!("{c:?}\r");
                         } else {
                             println!("{:?} ({})\r", c as u8, c);
                         }
                     }
                     Key::Ctrl('q') => break,
-                    _ => println!("{:?}\r", key),
+                    _ => println!("{key:?}\r"),
                 },
-                Err(e) => die(e),
+                Err(e) => die(&e),
             }
         }
+    }
+    pub fn default() -> Self {
+        Self {}
     }
 }
