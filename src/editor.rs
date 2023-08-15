@@ -1,5 +1,3 @@
-use std::cmp;
-
 use termion::event::Key;
 
 use crate::{Terminal, VERSION};
@@ -61,18 +59,24 @@ impl Editor {
         Terminal::flush()
     }
 
+    fn draw_welcome_messages(&self) {
+        let mut welcome_message = format!("Hecto editor -- version {}", VERSION);
+        let width = self.terminal.get_size().width as usize;
+        let len = welcome_message.len();
+        let padding = width.saturating_sub(len) / 2;
+        let spaces = " ".repeat(padding.saturating_sub(1));
+        welcome_message = format!("~{}{}", spaces, welcome_message);
+        welcome_message.truncate(width);
+        println!("{}\r", welcome_message);
+    }
+
     fn draw_rows(&self) {
         let height = self.terminal.get_size().height;
 
         for row in 0..height - 1 {
             Terminal::clear_current_line();
             if row == 0 {
-                let welcome_message = format!("Hecto Editor -- Version {}\r", VERSION);
-                let width = cmp::min(
-                    welcome_message.len(),
-                    self.terminal.get_size().width as usize,
-                );
-                println!("{}\r", &welcome_message[..width]);
+                self.draw_welcome_messages()
             } else {
                 println!("~\r")
             }
