@@ -1,7 +1,11 @@
 use std::env;
 
-use crate::{row::Row, Document, Terminal, VERSION};
+use crate::{row::Row, Document, Terminal};
+use termion::color;
 use termion::event::Key;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const STATUS_BG_COLOR: color::Rgb = color::Rgb(239, 239, 239);
 
 // (0,0) is at the top left of the screen
 #[derive(Default)]
@@ -102,6 +106,8 @@ impl Editor {
             println!("Goodbye./r");
         } else {
             self.draw_rows();
+            self.draw_status_bar();
+            self.draw_message_bar();
             // Terminal::cursor_position(&self.cursor_position);
             Terminal::cursor_position(&Position {
                 x: self.cursor_position.x.saturating_sub(self.offset.x),
@@ -133,7 +139,7 @@ impl Editor {
     fn draw_rows(&self) {
         let height = self.terminal.get_size().height;
 
-        for row_index in 0..height - 1 {
+        for row_index in 0..height {
             Terminal::clear_current_line();
             if let Some(row) = self.document.get_row(row_index as usize + self.offset.y) {
                 self.draw_row(row)
@@ -212,5 +218,16 @@ impl Editor {
         }
 
         self.cursor_position = Position { x, y }
+    }
+
+    fn draw_status_bar(&self) {
+        let spaces = " ".repeat(self.terminal.get_size().width as usize);
+        Terminal::set_bg_color(STATUS_BG_COLOR);
+        println!("{}\r", spaces);
+        Terminal::reset_bg_color();
+    }
+
+    fn draw_message_bar(&self) {
+        Terminal::clear_current_line();
     }
 }
