@@ -6,6 +6,7 @@ use termion::event::Key;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const STATUS_BG_COLOR: color::Rgb = color::Rgb(239, 239, 239);
+const STATUS_FG_COLOR: color::Rgb = color::Rgb(63, 63, 63);
 
 // (0,0) is at the top left of the screen
 #[derive(Default)]
@@ -221,10 +222,38 @@ impl Editor {
     }
 
     fn draw_status_bar(&self) {
-        let spaces = " ".repeat(self.terminal.get_size().width as usize);
+        let width = self.terminal.get_size().width as usize;
+
+        let mut file_name = "[No Name]".to_string();
+        if let Some(name) = &self.document.file_name {
+            file_name = name.clone();
+            file_name.truncate(20);
+        }
+
+        let line_indicator = format!(
+            "{}/{}",
+            self.cursor_position.y.saturating_add(1),
+            self.document.len()
+        );
+
+        let mut status: String = String::new();
+
+        status = format!("{} - {} lines", file_name, self.document.len());
+
+        let total_len = status.len() + line_indicator.len();
+
+        if width > total_len {
+            status.push_str(&" ".repeat(width - total_len));
+        }
+
+        status = format!("{}{}", status, line_indicator);
+        status.truncate(width);
+
         Terminal::set_bg_color(STATUS_BG_COLOR);
-        println!("{}\r", spaces);
+        Terminal::set_fg_color(STATUS_FG_COLOR);
+        println!("{}", status);
         Terminal::reset_bg_color();
+        Terminal::reset_fg_color();
     }
 
     fn draw_message_bar(&self) {
