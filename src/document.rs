@@ -41,11 +41,20 @@ impl Document {
     }
 
     pub fn delete(&mut self, at: &Position) {
+        let len = self.len();
         if at.y >= self.len() {
             return;
         }
 
-        let row = self.rows.get_mut(at.y).unwrap();
-        row.delete(at.x);
+        // 是否在最后一行 且 在最后一行的最后一个字符处
+        if at.x == self.rows.get_mut(at.y).unwrap().len() && at.y < len - 1 {
+            // 下一行删除，返回值为之前的下一行
+            let next_row = self.rows.remove(at.y + 1);
+            let row = self.rows.get_mut(at.y).unwrap();
+            row.append(&next_row);
+        } else {
+            let row = self.rows.get_mut(at.y).unwrap();
+            row.delete(at.x);
+        }
     }
 }
